@@ -1,0 +1,132 @@
+<html><head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.js"></script>
+</head><body>
+	<div id="div1">
+		<h2>WINDOWS INSTRUMENTATION MANAGEMENT</h2>
+			<p>To get the service data's of the localhost system</p>
+	</div>
+	<div id="search" style="display: none;">
+       <input type="text" id="myInput" placeholder="search for names.." title="Type in a name">
+	  </div>
+	<div id="dvTable"></div>
+	<button id="click">click here</button>
+	<div class="content" id="content"></div>
+
+<script>                                              // By sending request to java file and get response as JSONObject and make a table
+$(document).ready(function(){
+  $("button").click(function(){
+	 $.ajax({url : "services?",dataType : 'json',success: function(response){	
+			
+			//firsthash = response.servicedata[0];
+			//console.log(firsthash.ServiceName,firsthash.Status);
+			var customers = [];
+			customers.push(["Service Name", "Status", "StartUpType", "LogOnAs"]);
+			for(var i = 0;i < response.servicedata.length;i++)
+			{
+				var firsthash = response.servicedata[i];
+				customers.push([firsthash.ServiceName,firsthash.Status,firsthash.StartUpType,firsthash.Logonas]);
+			}
+			var table = $("<table/>");
+			table[0].border = "1";
+			var coloumnCount = customers[0].length;
+			var row = $(table[0].insertRow(-1));
+			for(var i = 0;i < coloumnCount;i++)
+			{
+				var headerCell = $("<th />");
+				headerCell.html(customers[0][i]);
+				row.append(headerCell);
+			}
+			for(var i = 1;i < customers.length;i++)
+			{
+				row = $(table[0].insertRow(-1));
+				for(var j = 0;j < coloumnCount;j++)
+				{
+					var cell = $("<td/>");
+					str = customers[i][j];
+					cell.html(str);
+            		row.append(cell);
+				}
+				str = "<td class='button' onclick= 'startfunction(this);'><button>start</button></td><td class='button' onclick= 'stopfunction(this);'><button>stop</button></td>";
+				row.append(str);
+			}
+			var dvTable = $("#dvTable");
+			dvTable.empty();
+			dvTable.append(table); 
+			
+	}});
+ });
+});
+var span = document.getElementById('click');
+span.onclick = function(){
+var form = document.getElementById('search');
+form.style.display="block";
+tr = document.getElementsByTagName("tr");
+
+}
+var searchinput = document.getElementById("myInput");
+searchinput.onkeyup = function() {
+    var input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById("myInput");
+	
+    filter = input.value.toUpperCase();
+	
+    ul = document.getElementById("dvTable");
+    li = ul.getElementsByTagName("tr");
+    for (i = 1; i < li.length; i++) {
+        a = li[i].getElementsByTagName("td")[0];
+		//console.log(a);
+        txtValue = a.textContent || a.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+}
+
+														// By this function the request send to the java and by dll the selected service is started
+function startfunction(obj)
+{
+sib1 = obj.previousSibling
+sib2 = sib1.previousSibling
+sib3 = sib2.previousSibling
+sib3.innerHTML = "Running"
+sib4 = sib3.previousSibling.innerText
+//console.log(sib4);
+	var services = sib4;
+	console.log(services);
+	var process = 'start';
+	 $.ajax({url : "check?services="+services+"&process="+process ,dataType : 'json',success: function(response)
+	 {
+		//console.log(response.result);
+		document.getElementById("content").innerHTML = response.result;
+	}});
+
+}
+
+													// By this function the request send to the java and by dll the selected service is stopped
+function stopfunction(obj)
+{
+sib1 = obj.previousSibling
+sib2 = sib1.previousSibling
+sib3 = sib2.previousSibling
+sib4 = sib3.previousSibling
+sib4.innerHTML = "Stopped"
+sib5 = sib4.previousSibling.innerText
+//console.log(sib5);
+	var services = sib5;
+	console.log(services);
+	var process = 'stop';
+	$.ajax({url : "check?services="+services+"&process="+process, dataType : 'json',success: function(response)
+	{
+		console.log(response.result);
+		document.getElementById("content").innerHTML = response.result;
+	}});
+
+
+}
+
+</script>
+
+</body>
+</html>
